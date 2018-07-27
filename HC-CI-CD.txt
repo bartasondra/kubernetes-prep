@@ -1,0 +1,23 @@
+HC CI/CD
+
+pods:
+  jenkins:
+    java:
+    maven:
+    gradle:
+    docker:
+    helm:
+  sonar:
+  nexus:
+  docker-repository:
+  chart-museum:
+
+
+
+
+
+helm init
+helm install --name jenkins helm-charts/jenkins
+helm install --name nexus helm-charts/sonatype-nexus
+helm install --name docker-registry helm-charts/docker-registry
+helm install --name charts-museum helm-charts/chart-museum

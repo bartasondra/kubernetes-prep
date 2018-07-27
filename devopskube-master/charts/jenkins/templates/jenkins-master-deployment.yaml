@@ -1,0 +1,148 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "fullname" . }}
+  labels:
+    app: "{{ .Chart.Name }}"
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+    provider: devopskube
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      component: "{{.Release.Name}}-{{.Values.master.component}}"
+  template:
+    metadata:
+      labels:
+        heritage: {{.Release.Service | quote }}
+        release: {{.Release.Name | quote }}
+        chart: "{{.Chart.Name}}-{{.Chart.Version}}"
+        component: "{{.Release.Name}}-{{.Values.master.component}}"
+        provider: devopskube
+      annotations:
+        pod.beta.kubernetes.io/init-containers: '[
+              {
+                  "name": "copy-default-config",
+                  "image": "{{ .Values.master.image }}:{{ .Values.master.imageTag }}",
+                  "imagePullPolicy": {{.Values.master.imagePullPolicy  | quote }},
+                  "command": ["cp", "-n", "/var/jenkins_config/config.xml", "/var/jenkins_home"],
+                  "volumeMounts": [
+                      {
+                          "name": "jenkins-config",
+                          "mountPath": "/var/jenkins_config"
+                      },
+                      {
+                          "name": "jenkins-home",
+                          "mountPath": "/var/jenkins_home"
+                      }
+                  ]
+              },
+              {
+                  "name": "copy-default-mailer",
+                  "image": "{{ .Values.master.image }}:{{ .Values.master.imageTag }}",
+                  "imagePullPolicy": {{.Values.master.imagePullPolicy  | quote }},
+                  "command": ["cp", "-n", "/var/jenkins_config/hudson.tasks.Mailer.xml", "/var/jenkins_home"],
+                  "volumeMounts": [
+                      {
+                          "name": "jenkins-config",
+                          "mountPath": "/var/jenkins_config"
+                      },
+                      {
+                          "name": "jenkins-home",
+                          "mountPath": "/var/jenkins_home"
+                      }
+                  ]
+              },
+              {
+                  "name": "copy-default-location",
+                  "image": "{{ .Values.master.image }}:{{ .Values.master.imageTag }}",
+                  "imagePullPolicy": {{.Values.master.imagePullPolicy  | quote }},
+                  "command": ["cp", "-n", "/var/jenkins_config/jenkins.model.JenkinsLocationConfiguration.xml", "/var/jenkins_home"],
+                  "volumeMounts": [
+                      {
+                          "name": "jenkins-config",
+                          "mountPath": "/var/jenkins_config"
+                      },
+                      {
+                          "name": "jenkins-home",
+                          "mountPath": "/var/jenkins_home"
+                      }
+                  ]
+              },
+              {
+                  "name": "copy-default-credentials",
+                  "image": "{{ .Values.master.image }}:{{ .Values.master.imageTag }}",
+                  "imagePullPolicy": {{.Values.master.imagePullPolicy  | quote }},
+                  "command": ["cp", "-n", "/var/jenkins_config/credentials.xml", "/var/jenkins_home"],
+                  "volumeMounts": [
+                      {
+                          "name": "jenkins-config",
+                          "mountPath": "/var/jenkins_config"
+                      },
+                      {
+                          "name": "jenkins-home",
+                          "mountPath": "/var/jenkins_home"
+                      }
+                  ]
+              }
+          ]'
+    spec:
+      containers:
+        - name: {{ template "fullname" . }}
+          securityContext:
+            privileged: true
+          image: "{{.Values.master.image}}:{{.Values.master.imageTag}}"
+          imagePullPolicy: {{ .Values.master.imagePullPolicy | quote }}
+          args: [ "--argumentsRealm.passwd.jenkins=$(ADMIN_PASSWORD)", "--argumentsRealm.roles.jenkins=admin"]
+          env:
+            - name: JAVA_OPTS
+              value: "{{ default "" .Values.master.javaOpts }}"
+            - name: JENKINS_OPS
+              value: "{{ default "" .Values.master.jenkinsOpts }}"
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "fullname" . }}
+                  key: jenkins-admin-password
+            - name: ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "fullname" . }}
+                  key: jenkins-admin-user
+            - name: DOCKER_USER
+              valueFrom:
+                secretKeyRef:
+                  name: jenkins-docker-credentials
+                  key: docker-account
+            - name: DOCKER_PWD
+              valueFrom:
+                secretKeyRef:
+                  name: jenkins-docker-credentials
+                  key: docker-password
+          ports:
+            - containerPort: {{.Values.master.containerPort}}
+              name: http
+            - containerPort: {{.Values.master.slaveListenerPort}}
+              name: slavelistener
+          resources:
+            requests:
+              cpu: "{{.Values.master.cpu}}"
+              memory: "{{.Values.master.memory}}"
+          volumeMounts:
+            - mountPath: /var/jenkins_home
+              name: jenkins-home
+              readOnly: false
+            - mountPath: /var/jenkins_config
+              name: jenkins-config
+              readOnly: true
+      volumes:
+      - name: jenkins-home
+        hostPath:
+          path: {{ .Values.persistence.path }}
+      - name: jenkins-config
+        configMap:
+          name: {{ template "fullname" . }}

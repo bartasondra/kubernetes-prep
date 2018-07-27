@@ -1,0 +1,11 @@
+name: jenkins
+version: 0.0.5
+description: A Jenkins Helm chart for Kubernetes.
+home: https://jenkins.io/
+sources:
+  - https://github.com/jenkinsci/jenkins
+  - https://github.com/jenkinsci/docker-jnlp-slave
+maintainers:
+  - name: Markus M. May
+    email: triplem@javafreedom.org
+icon: https://wiki.jenkins-ci.org/download/attachments/2916393/logo.png

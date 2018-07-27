@@ -1,0 +1,1 @@
+helm install --name nexus --namespace nexus --set persistence.enabled=false --set nexusBackup.persistence.enabled=false --set ingress.enabled=false stable/sonatype-nexus

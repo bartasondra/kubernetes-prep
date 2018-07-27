@@ -1,0 +1,9 @@
+repository
+docs/components/*.md
+site
+*.private
+*.private.*
+*.tgz
+requirements.lock
+_partials.tpl
+.idea

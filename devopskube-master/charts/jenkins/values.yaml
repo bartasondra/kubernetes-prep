@@ -1,0 +1,46 @@
+# Default values for jenkins.
+# This is a YAML-formatted file.
+# Declare name/value pairs to be passed into your templates.
+# name: value
+
+master:
+  name: jenkins-master
+  image: devopskube/jenkins
+  imageTag: 2.73.1-1
+  imagePullPolicy: Never
+  component: jenkins-master
+  adminUser: admin
+  adminPassword: admin1234
+  cpu: "200m"
+  memory: "256Mi"
+  javaOpts: "-Xms512m -Xmx512m -Djenkins.install.runSetupWizard=false -Ddocker.host=unix:/var/run/docker.sock"
+  jenkinsOpts:
+  servicePort: 80
+  hostName: jenkins.example.com
+  containerPort: 8080
+  slaveListenerPort: 50000
+  systemMessage: "DevOpsKube Build Server"
+
+docker:
+  account: yourUserName
+  password: yourPassword
+
+agent:
+  image: jenkinsci/jnlp-slave
+  imageTag: 2.52
+  cpu: "200m"
+  memory: "256Mi"
+
+smtp:
+  host: mail.example.com
+  port: 999
+  auth:
+    userName: buildmaster@example.com
+  replyTo: buildmaster@example.com
+
+persistence:
+#  enabled: true
+#  storageClass: generic
+#  accessMode: ReadWriteOnce
+#  size: 8Gi
+  path: /data/jenkins

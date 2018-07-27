@@ -1,0 +1,51 @@
+imageTag: 0.11.29
+
+domainName: example.com
+hostName: gogs.example.com
+httpContainerPort: 3000
+sshContainerPort: 2222
+
+startSshServer: true
+
+skipTlsVerify: true
+
+secretKey: '!#@FDEWREWR&*('
+
+log:
+  rootPath: /data/gogs/log
+
+server:
+  appDataPath: /data/gogs/data
+  sshRootPath: /data/ssh
+
+repository:
+  root: /data/git
+
+attachment:
+  path: /data/gogs/data/attachments
+
+session:
+  providerConfig: /data/gogs/data/sessions
+
+picture:
+  avatarUploadPath: /data/gogs/data/avatars
+
+mailer:
+  enabled: true
+  heloHostname: gogs.example.com
+  host: smtp.example.com:587
+  from: gogs@example.com
+  user: gogs@example.com
+  passwd: averysecretpassword
+  skipVerify: false
+
+persistence:
+  dataPath: /data/gogs/data
+
+databaseType: mysql
+mysql:
+  databaseName: gogs
+  databaseUser: gogs
+  databasePassword: gogs
+  persistence:
+    path: /data/gogs/mysql
